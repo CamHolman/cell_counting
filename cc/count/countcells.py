@@ -33,6 +33,8 @@ def run_log(image, plot_im = False, verbose = False, log_params = log_defaults):
         exclude_border = log_params['exclude_border']
         )
 
+    if len(blobs_log) == 0:
+        print('No Blobs')
     # Compute radii in the 3rd column.
     blobs_log[:, 2] = blobs_log[:, 2] * sqrt(2)
     
@@ -54,13 +56,13 @@ def run_log(image, plot_im = False, verbose = False, log_params = log_defaults):
 
 
 class cell_counts:
-
-    def __init__(self, name, image, blobs, pixels_per_micron = 1.5):
+    def __init__(self, name, image, blobs, pixels_per_micron, log_params):
+        self.id = os.path.basename(name)[0:5]
         self.name = name 
         self.image = image
-        # self.overlay = overlay
-        self.blobs = blobs[blobs[:,2] > 2]
+        self.blobs = blobs[blobs[:,2] > 2] # restriction on minimum blob size
         self.pixels_per_micron = pixels_per_micron
+        self.log_params = log_params
     
     @ property
     def num_cells(self):
@@ -98,11 +100,14 @@ class cell_counts:
         return slice_area
 
     @ property
-    def cells_per_area(self, pixels_per_micron = 1.5):
-         microns_per_pixel = 1/pixels_per_micron
-         area = self.slice_area
-         cells_per_area = len(self.blobs)/area 
-         return cells_per_area 
+    def cells_per_um2(self):
+         um2 = self.slice_area
+         cells_per_um2 = self.num_cells/um2
+         return cells_per_um2 
+
+    @ property
+    def cells_per_mm2(self):
+        return self.cells_per_um2 * 1e6
 
     @ property
     def percent_slice(self):
@@ -110,6 +115,7 @@ class cell_counts:
 
     def to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'image': self.image,
             'blobs': self.blobs,
@@ -117,7 +123,8 @@ class cell_counts:
             'num_cells': self.num_cells,
             'im_area': self.im_area,
             'slice_area': self.slice_area,
-            'cells_per_area': self.cells_per_area,
+            'cells_per_um2': self.cells_per_um2,
+            'cells_per_mm2': self.cells_per_mm2,
             'percent_slice': self.percent_slice
 
         }
@@ -142,33 +149,71 @@ def collect_cell_counts(
     image_directory,  
     log_params = log_defaults,
     testi = 0, 
-    verbose = False
+    verbose = False,
+    pixels_per_micron = 1.5
     ): 
     images = ski.io.ImageCollection(os.path.join(image_directory, '*.tif'))
     
     # For testing, allow the check of first set of images up to i = testi
     if testi > 0:
         images = images[0:testi]
-    
+        
     # Verbose
     if verbose == True:
-            print (log_params)    
+        print ('LOG parameters are:')
+        print (log_params)
+        print()
+        print ('The first 5 files are:')
+        print (images.files[0:5])
+        print ('...')
+        print ('The last 5 files are:')
+        print (images.files[-5:])
+        print()
+            
     
     # Run 
     counted = []
     for i, image in enumerate(images):
-        print('Current index:', i) 
-
+        if verbose == True:
+            print('i is:', i)
+            print("Current file is:")
+            print(images.files[i])
+            print()
+        
+        if verbose == False:
+            if i%10 == 0:
+                print('Current index:', i) 
         image8 = ski.img_as_ubyte(image[...,1])
         blobs_log = run_log(image8, plot_im = False, log_params = log_params)
-                  
-        # CMH Note 
-            # Assign the mosue name plus index to the class object containing its data
-            #exec(mouse_name + "%s = %s" % (i, str(cell_counts(images.files[i], image8, blobs_log))))
-
-            # Append mouse data class object to list to return back to user 
-            #exec("counted.append(" + mouse_name + "%s)" % i)
-
-        counted.append(cell_counts(images.files[i], image8, blobs_log))
+        clob = cell_counts(
+                    name = images.files[i], 
+                    image = image8, 
+                    blobs = blobs_log,
+                    pixels_per_micron= pixels_per_micron,
+                    log_params = log_params
+                    )
+        counted.append(clob)
 
     return counted       
+
+def clob_to_dict(clob):
+        return {
+            'id': clob.id,
+            'name': os.path.basename(clob.name)[:-4],
+            #'image': clob.image,
+            #'blobs': clob.blobs,
+            #'pixels_per_micron': clob.pixels_per_micron,
+            'num_cells': clob.num_cells,
+            #'im_area': clob.im_area,
+            'slice_area': clob.slice_area,
+            'cells_per_um2': clob.cells_per_um2,
+            'cells_per_mm2': clob.cells_per_mm2,
+            'percent_slice': clob.percent_slice  
+        }
+
+def extract_panda(clob_list):
+    dictlist = []
+    for i in range(len(clob_list)):
+        dictlist += [clob_to_dict(clob_list[i])]
+    DF = pd.DataFrame(dictlist)
+    return DF
