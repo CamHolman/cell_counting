@@ -29,7 +29,7 @@ def run_log(image, plot_im = False, verbose = False, log_params = log_defaults):
         num_sigma = log_params['num_s'], 
         threshold = log_params['thresh'],
         overlap = log_params['overlap'],
-        log_scale = log_params['overlap'],
+        log_scale = log_params['log_scale'],
         exclude_border = log_params['exclude_border']
         )
 
@@ -139,10 +139,9 @@ class cell_counts:
 
 
 def collect_cell_counts(
-    image_directory, 
-    mouse_name = 'mouse_x_', 
-    testi = 0, 
+    image_directory,  
     log_params = log_defaults,
+    testi = 0, 
     verbose = False
     ): 
     images = ski.io.ImageCollection(os.path.join(image_directory, '*.tif'))
@@ -151,16 +150,18 @@ def collect_cell_counts(
     if testi > 0:
         images = images[0:testi]
     
+    # Verbose
+    if verbose == True:
+            print (log_params)    
+    
     # Run 
     counted = []
     for i, image in enumerate(images):
         print('Current index:', i) 
+
         image8 = ski.img_as_ubyte(image[...,1])
-        if verbose = False:
-            blobs_log = run_log(image8, plot_im = False, log_params = log_params)
-        
-        if verbose = True:
-            blobs_log = run_log(image8, plot_im = False, log_params = log_params, verbose = True)    
+        blobs_log = run_log(image8, plot_im = False, log_params = log_params)
+                  
         # CMH Note 
             # Assign the mosue name plus index to the class object containing its data
             #exec(mouse_name + "%s = %s" % (i, str(cell_counts(images.files[i], image8, blobs_log))))
