@@ -125,8 +125,8 @@ class cell_counts:
             'slice_area': self.slice_area,
             'cells_per_um2': self.cells_per_um2,
             'cells_per_mm2': self.cells_per_mm2,
-            'percent_slice': self.percent_slice
-
+            'percent_slice': self.percent_slice,
+            'LOG_params': self.log_params
         }
 
     def overlay(self, return_fig = False):
@@ -169,8 +169,7 @@ def collect_cell_counts(
         print ('The last 5 files are:')
         print (images.files[-5:])
         print()
-            
-    
+      
     # Run 
     counted = []
     for i, image in enumerate(images):
@@ -178,12 +177,17 @@ def collect_cell_counts(
             print('i is:', i)
             print("Current file is:")
             print(images.files[i])
-            print()
+            print()     
         
+        """
+        Commenting out for training
         if verbose == False:
             if i%10 == 0:
                 print('Current index:', i) 
-        image8 = ski.img_as_ubyte(image[...,1])
+        """
+
+        greyscale_im = rgb2gray(image)
+        image8 = ski.img_as_ubyte(greyscale_im)
         blobs_log = run_log(image8, plot_im = False, log_params = log_params)
         clob = cell_counts(
                     name = images.files[i], 

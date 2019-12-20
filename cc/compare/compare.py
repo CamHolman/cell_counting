@@ -28,5 +28,5 @@ def extract_panda(clob_list):
 
 def merge_counts(man_counts, clob_list):
     DF = extract_panda(clob_list)
-    mDF = pd.merge(DF, man_counts, on='name' )
+    mDF = pd.merge(DF, man_counts, on='id' )
     return mDF
