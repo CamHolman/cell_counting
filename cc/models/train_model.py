@@ -100,8 +100,8 @@ def train_cc(man_counts, imdir, ranges=default_ranges):
                                         ranges['overlap_interval']):
                         
                         
-                        if idx%10 == 0:
-                            print("Trying combination #:", idx)
+                        # if idx%10 == 0:
+                        print("Trying combination #:", idx)
                         idx += 2
                         
                         log_params_1 = {
