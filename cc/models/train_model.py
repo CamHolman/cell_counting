@@ -104,6 +104,7 @@ def train_cc(man_counts, imdir, ranges=default_ranges):
                         print("Trying combination #:", idx)
                         idx += 2
                         
+                        ## Run with log_scale = False
                         log_params_1 = {
                             'min_s': min_sigma,
                             'max_s': max_sigma,
@@ -113,7 +114,13 @@ def train_cc(man_counts, imdir, ranges=default_ranges):
                             'log_scale': False,
                             'exclude_border': False
                         }     
-
+                        pearson1 = find_pearson(man_counts, imdir, log_params_1)
+                        collection.append({
+                            'pearson': pearson1,
+                            'log_params': log_params_1,
+                        })
+                        
+                        ## Run also with log_scale = True
                         log_params_2 = {
                             'min_s': min_sigma,
                             'max_s': max_sigma,
@@ -123,20 +130,13 @@ def train_cc(man_counts, imdir, ranges=default_ranges):
                             'log_scale': True,
                             'exclude_border': False
                         }                            
-
-                        pearson1 = find_pearson(man_counts, imdir, log_params_1)
-
+                        
                         pearson2 = find_pearson(man_counts, imdir, log_params_2)
-
-                        collection.append({
-                            'pearson': pearson1,
-                            'log_params': log_params_1,
-                        })
 
                         collection.append({
                             'pearson': pearson2,
                             'log_params': log_params_2,
                         })
-
+                        
     return collection
 
