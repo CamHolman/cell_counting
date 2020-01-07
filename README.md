@@ -10,7 +10,7 @@ With git installed, navigate to the folder you wish to contain this repo and run
 
     git clone https://github.com/ixianid/cell_counting/
     
-This will copy the repository to your local machine. The repos organization is based on cookiecutter, with some modifications. See the organization below.
+This will copy the repository to your local machine. The repo's organization is based on cookiecutter, with some modifications. See the organization below.
 
 ### Project Organization
 
