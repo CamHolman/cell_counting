@@ -3,9 +3,9 @@ Cell Counting
 
 Tools to count signal positive cells from IHC images. This is designed for detecting Alexa-488 posititve cells with sparse distribution. However, this should be generalizable to different data sets through use of the training algorithm.
 
-![Example Count 1](references/example_count_1.png)
+Here you can see a randomly chosen example:
+![Example Count](references/example_count_2.png)
 
-![Example Count 2](references/example_count_2.png)
 ## Setup 
 ### Cloning Repository
 With git installed, navigate to the folder you wish to contain this repo and run the following line:
