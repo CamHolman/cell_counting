@@ -3,6 +3,11 @@ import skimage as sk
 import numpy as np
 import os
 
+"""
+@CMH 2019
+
+Below are some functions used for comparision with manual counting
+"""
 
 def clob_to_dict(clob):
         return {
