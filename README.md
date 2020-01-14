@@ -66,7 +66,6 @@ This will copy the repository to your local machine. The repo's organization is 
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
 
---------
 
 ### Setting up virtual environment
 
@@ -87,22 +86,48 @@ If you are using conda, you have two options:
     conda create --name <env_name> --file requirements.txt
     
 ## Test Data
-Test czi files can be found under 'references/test_data/'. You can use these to make sure your pipeline is set up correctly.
+Test czi files can be found under `references/test_data/czi/`. Test TIFFs can be found in `references/test_data/tif/`. Expected counts can be found under `references/test_data/expected_counts/` as CSV files. You can use these to make sure your pipeline is set up correctly.
 
-## Import 
-Importing raw CZI files can be managed through `cc/io`. This uses bioformats import through a javabridge, as originally implimented by [cellprofiler](https://cellprofiler.org/). The included implementation will process CZI images taken with three channels. In the intended case, these include:
+    CZI Files = [2D, 3Z, 3C]
 
-1. DAPI
-2. mCherry
-3. eGFP
+    TIFF = [2D, 1Z, 1C]
 
-Each of these channels has multiple z-planes. Before couting, a maxprojection will be taken of the z-planes for each channel. The counted channel is eGFP, in future implementations the signal from the eGFP channel will be cross-referenced with the DAPI channel to ensure a cell body and not a process is being counted.
+To do so, follow the instuctions below and run the pipeline on the test data.
 
-## Preprocessing
+## Import and Preprocessing 
+Importing raw CZI files can be managed through `cc/io` and preprocessing can be handled in `cc/preprocess`. This uses bioformats import through a javabridge, as originally implimented by [cellprofiler](https://cellprofiler.org/). TIf more comfortable, preprocessing can be handled with [FIJI](https://fiji.sc/) and single channel, noise corrected, max-projected TIFFs can be passed directly to the cell counter. 
+
+If you prefer to do preprocessing in FIJI, skip to the `FIJI` section below.
 
 
-The implemented 
+#### CC | Bioformats Import (CZI)
+This uses bioformats import through a javabridge, as originally implimented by [cellprofiler](https://cellprofiler.org/). The included implementation will process CZI images taken with three channels. In the intended case, these include:
 
+    1. mCherry
+    2. eGFP
+    3. DAPI
+
+Each of these channels has multiple z-planes. Each CZI files is imported as a four-dimensional numpy array of the following organization:
+
+    [Y_plane, X_plane, Z_depth, Channel]
+
+To import one CZI file: 
+
+
+
+#### CC | Preprocessing
+After import, images are stored as 4D numpy arrays. Before couting, a maxprojection will be taken of the z-planes for each channel. 
+
+Preprocessing done here will include a max-projection of each channel to form a single, two-dimensional image for each channel. 
+
+
+despeckle a 3 x 3 [median filter](https://homepages.inf.ed.ac.uk/rbf/HIPR2/median.htm). This helps to remove pixels that differ significantly from their neighbors, which removes noise while deing a resonable job of maintining edges. This is the same process done by FIJI's 'despeckle' inbuilt function. The kernel itself looks and behaves like this:
+
+![3x3 Median Filter Kernel](references/imgs/3-3-kernel-in-median-filter.png)
+
+
+## Cell Counting
+The counted channel is eGFP, in future implementations the signal from the eGFP channel will be cross-referenced with the DAPI channel to ensure a cell body and not a process is being counted.
 
 ## Training Model
 
