@@ -1,12 +1,12 @@
 Cell Counting
 ==============================
+## Introduction
 
 Tools to count signal positive cells from IHC images. This is designed for detecting Alexa-488 posititve cells with sparse distribution. However, this should be generalizable to different data sets through use of the training algorithm.
 
 Here you can see a randomly chosen example:
 ![Example Count](references/example_count_2.png)
 
-------
 ## Setup 
 ### Cloning Repository
 With git installed, navigate to the folder you wish to contain this repo and run the following line:
@@ -61,22 +61,23 @@ This will copy the repository to your local machine. The repo's organization is 
     │   │   └── train_model.py
     │   │
     │   └── plot                <- Functions for plotting and visualizing data
-    │       └── plot.py
+    │       └── visualize.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
 
+--------
 
 ### Setting up virtual environment
 
 Once the repository is cloned, navigate to the head of the repo to set up the virtual environment. 
 
-#### virtualEnv
+##### virtualenv
 If you are using virtualenv, run the following line:
 
     pip install -r requirements.txt
 
-#### conda
+##### conda
 If you are using conda, you have two options:
 
     # Option 1
@@ -85,14 +86,30 @@ If you are using conda, you have two options:
     # Option 2
     conda create --name <env_name> --file requirements.txt
     
-    
+## Test Data
+Test czi files can be found under 'references/test_data/'. You can use these to make sure your pipeline is set up correctly.
+
+## Import 
+Importing raw CZI files can be managed through `cc/io`. This uses bioformats import through a javabridge, as originally implimented by [cellprofiler](https://cellprofiler.org/). The included implementation will process CZI images taken with three channels. In the intended case, these include:
+
+1. DAPI
+2. mCherry
+3. eGFP
+
+Each of these channels has multiple z-planes. Before couting, a maxprojection will be taken of the z-planes for each channel. The counted channel is eGFP, in future implementations the signal from the eGFP channel will be cross-referenced with the DAPI channel to ensure a cell body and not a process is being counted.
+
 ## Preprocessing
 
+
+The implemented 
+
+
 ## Training Model
+
 The current training model is a brute force depth first search for the highest pearson correlation with varying parameters for the Laplacian of Gaussian blob detection algorithm versus manual cell counting. This will be improved, but is functional with time and computing power.
 
 To run the training, manually count ~20 images and record this information in a CSV with unique identifiers for each file. Run the training algorithm:
-    
+     
     train_cc(man_counts, imdir, ranges=default_ranges) 
 
 with the CSV (man_counts) and training image directory (imdir) as input. You have the ability to modify the ranges of parameters it will search through to find the highest pearson correlation with the training data. The default range parameters are:
