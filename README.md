@@ -118,10 +118,10 @@ To import one CZI file:
 #### CC | Preprocessing
 After import, images are stored as 4D numpy arrays. Before couting, a maxprojection will be taken of the z-planes for each channel. 
 
-Preprocessing done here will include a max-projection of each channel to form a single, two-dimensional image for each channel. 
+Preprocessing done here will include a max-projection of the Z axis of each channel to form a single, two-dimensional image for each channel. This means you will have three total 2D images (mCherry, eGFP, DAPI) 
 
 
-despeckle a 3 x 3 [median filter](https://homepages.inf.ed.ac.uk/rbf/HIPR2/median.htm). This helps to remove pixels that differ significantly from their neighbors, which removes noise while deing a resonable job of maintining edges. This is the same process done by FIJI's 'despeckle' inbuilt function. The kernel itself looks and behaves like this:
+After max projection, noise is removed and edges sharpened with a 3 x 3 [median filter](https://homepages.inf.ed.ac.uk/rbf/HIPR2/median.htm). This helps to remove pixels that differ significantly from their neighbors, which removes noise while deing a resonable job of maintining edges. This is the same process done by FIJI's 'despeckle' inbuilt function. The convolution kernel itself looks and behaves like this:
 
 ![3x3 Median Filter Kernel](references/imgs/3-3-kernel-in-median-filter.png)
 
