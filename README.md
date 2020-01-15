@@ -118,16 +118,83 @@ To import one CZI file:
 #### CC | Preprocessing
 After import, images are stored as 4D numpy arrays. Before couting, a maxprojection will be taken of the z-planes for each channel. 
 
-Preprocessing done here will include a max-projection of the Z axis of each channel to form a single, two-dimensional image for each channel. This means you will have three total 2D images (mCherry, eGFP, DAPI) 
+Preprocessing done here will include a max-projection of the Z axis of each channel to form a single, two-dimensional image for each channel. This means you will have three total 2D images (mCherry, eGFP, DAPI) per CZI file, i.e. different max-projected channels from the same location. 
 
 
 After max projection, noise is removed and edges sharpened with a 3 x 3 [median filter](https://homepages.inf.ed.ac.uk/rbf/HIPR2/median.htm). This helps to remove pixels that differ significantly from their neighbors, which removes noise while deing a resonable job of maintining edges. This is the same process done by FIJI's 'despeckle' inbuilt function. The convolution kernel itself looks and behaves like this:
 
 ![3x3 Median Filter Kernel](references/imgs/3-3-kernel-in-median-filter.png)
 
+The result of this can be seen in the link above. It is more effective than a gaussian blur at removing noise while preserving edges. However, it is worth noting that a gaussian will still be done later in the blob detection algorithm. 
+
 
 ## Cell Counting
+To count cells a [Laplacian of Gaussian](http://fourier.eng.hmc.edu/e161/lectures/gradient/node8.html) blob detection algorithm is implemented. See the link for more details on the math behind it. The algorithm implemented here originates from [scikit-image](https://github.com/scikit-image/scikit-image), an excellent package for processing and analyzing scientific images with python.
+
 The counted channel is eGFP, in future implementations the signal from the eGFP channel will be cross-referenced with the DAPI channel to ensure a cell body and not a process is being counted.
+
+Blob detection is implemented through a counted cell class with the following structure
+
+    class cell_counts:
+        def __init__(self, name, image, blobs, pixels_per_micron, log_params):
+            self.id = os.path.basename(name)[0:5]
+            self.name = name 
+            self.image = image
+            self.blobs = blobs[blobs[:,2] > 2] # restriction on minimum blob size
+            self.pixels_per_micron = pixels_per_micron
+            self.log_params = log_params
+        
+        @ property
+        def num_cells(self):
+            Returns the number of detected cells
+        
+        @ property
+        def im_area(self):
+            Returns the area of the entire image, including slice 
+            and background
+
+        @ property
+        def slice_area(self):
+            Extracts pixels that are determined to be slice and not 
+            background and returns the detected area in square microns
+
+            This is useful for images that are, for example, at the edge of
+             cortex. This prevents the need to manually crop all images in 
+             which the slice does not fill the field of view
+
+        @ property
+        def cells_per_um2(self):
+            Returns the number of cells detected per sq um
+
+        @ property
+        def cells_per_mm2(self):
+            Returns the number of cells detected per square mm
+
+        @ property
+        def percent_slice(self):
+            Returns the percent of image detected as slice
+
+        def to_dict(self):
+            This returns all properties as a dictionary for comparison (ie.
+             number of cells detected, area of slice, percent of image 
+             detected to be slice, etc...) 
+
+        def overlay(self, return_fig = False):
+            Returns the original image side by side with the overlayed 
+            image. This shows which parts of the image were counted as cells 
+            as well as circular area of the cell body. if return fig is true 
+            then the figure object is returned for further manipulation, if
+            not then it is just displayed. 
+
+
+Counting a single image will result in a image class object that can be used as noted above to extract pertinent information. An important aspect of this is the detection of slice area to avoid the need for manually cropping large numbers of images. Consider the following image:
+
+![Edge Image](references\imgs\edge_image.png)
+
+In this case, about half of the image is just the slide, while the other half contains tissue and cells to be counted. If we were to calculate the number of cells based on the total area of the image, we would get a incorrectly low estimate of cells per quare millimeter.
+
+The cell_counts class will deal with this appropriately by detecting the part of the image that can be considered slice and calculating cells per square millimeter based on slice area and the total cells counted in the image.
+
 
 ## Training Model
 
