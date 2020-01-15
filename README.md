@@ -189,7 +189,7 @@ Blob detection is implemented through a counted cell class with the following st
 
 Counting a single image will result in a image class object that can be used as noted above to extract pertinent information. An important aspect of this is the detection of slice area to avoid the need for manually cropping large numbers of images. Consider the following image:
 
-![Edge Image](references\imgs\edge_image.png)
+![Edge Image](references/imgs/edge_image.png)
 
 In this case, about half of the image is just the slide, while the other half contains tissue and cells to be counted. If we were to calculate the number of cells based on the total area of the image, we would get a incorrectly low estimate of cells per quare millimeter.
 
@@ -229,12 +229,8 @@ To choose your own ranges and intervals modify the above dictionary and pass it 
 After completion, the training algorithm will save a CSV with each pearson correlation and the parameters used for that instance. It will also retrun these parameters as a dictionary Choose the parameters with the highest pearson correlation to proceed. 
 
 
-## Cell Counting
-To count cells make sure 
+___________________
 
 
+<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. </small></p>
 
-
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
-"# cell_counting" 
